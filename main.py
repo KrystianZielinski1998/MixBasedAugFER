@@ -1,0 +1,204 @@
+import torch 
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+from pathlib import Path
+from tqdm import tqdm
+from torchvision.models import (
+    convnext_base,
+    shufflenet_v2_x2_0,
+    swin_b,
+    ConvNeXt_Base_Weights,
+    ShuffleNet_V2_X2_0_Weights,
+    Swin_B_Weights
+)
+
+from sklearn.metrics import confusion_matrix, classification_report
+import argparse
+from pathlib import Path
+
+from train import GetLoaders, Trainer
+from utils.logging_config import setup_logging
+
+def get_model(model_str: str, classes: list):
+
+    num_classes = len(classes)
+    match model_str:
+        case "convnext":
+            weights = ConvNeXt_Base_Weights.IMAGENET1K_V1 
+            model = convnext_base(weights=weights)
+            model.classifier[2] = nn.Linear(model.classifier[2].in_features, num_classes)
+        case "shufflenet":
+            weights = ShuffleNet_V2_X2_0_Weights.IMAGENET1K_V1
+            model = shufflenet_v2_x2_0(weights=weights)
+            model.fc = nn.Linear(model.fc.in_features, num_classes)
+        case "swin":
+            weights = Swin_B_Weights.IMAGENET1K_V1
+            model = swin_b(weights=weights)
+            model.head = nn.Linear(model.head.in_features, num_classes)
+    
+    return model, weights
+
+def parse_args():
+    """
+    Parse command-line arguments for training and logging configuration.
+    Returns a namespace with all arguments.
+    """
+
+    parser = argparse.ArgumentParser(
+        description="Training script with W&B logging and k-fold support"
+    )
+
+    # Dataset parameters
+    parser.add_argument("--dataset_path", type=str, required=True, help="Path to the root folder of the dataset")
+    
+    # Model parameters
+    parser.add_argument("--model_str", type=str, default="shufflenet", choices=["convnext", "shufflenet", "swin"], help="Model architecture to use")
+
+    # Training hyperparameters
+    parser.add_argument("--batch_size", type=int, default=64, help="Batch size for training and validation")
+    parser.add_argument("--max_epochs", type=int, default=100, help="Maximum number of epochs")
+    parser.add_argument("--patience", type=int, default=20, help="Early stopping patience")
+    parser.add_argument("--base_lr", type=float, default=5e-4, help="Initial learning rate")
+    parser.add_argument("--patience_lr", type=int, default=5, help="LR scheduler patience")
+    parser.add_argument("--min_lr", type=float, default=1e-6, help="Minimum learning rate")
+
+    # K-fold parameters
+    parser.add_argument("--num_folds", type=int, default=5, help="Number of folds for cross-validation")
+
+    # Augmentation and logging
+    parser.add_argument("--aug_method", type=str, default="none", help="Data augmentation method applied")
+  
+    args = parser.parse_args()
+
+    # Convert dataset path to Path object
+    args.dataset_path = Path(args.dataset_path)
+
+    # Automatically extract dataset name
+    args.dataset_name = args.dataset_path.name
+
+    return args
+
+def main():
+
+    # Parse args
+    args = parse_args()
+
+    # Device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Class names list
+    classes = ["anger", "contempt", "disgust", "fear", "happiness", "neutral", "sadness", "surprise"]
+
+    # Get loaders
+    get_loaders = GetLoaders(args.dataset_path, args.batch_size)
+
+    # Initialize metric classes
+    cr = ClassificationReport(classes)
+    cm = ConfusionMatrix(classes)
+
+    # Initialize wandblogger
+    wandb = WandbLogger()
+
+    # Logger
+    logger = logging.getLogger(__name__) 
+
+    # Start k-fold cross validation
+    for fold in range(1, args.num_folds + 1):
+        
+        # Get model 
+        model, weights = get_model(args.model_str, classes)
+
+        # Get training, validation and test dataset loaders
+        train_loader, val_loader, test_loader = get_loaders(fold_idx=fold, weights)
+
+        # Initialize trainer
+        trainer = Trainer(
+            model=model,
+            train_loader=train_loader,
+            val_loader=val_loader,
+            test_loader=test_loader,
+            device=device,
+            max_epochs=args.max_epochs,
+            patience=args.patience,
+            base_lr=args.base_lr,
+            patience_lr=args.patience_lr,
+            min_lr=args.min_lr,
+            fold_idx=fold
+        )
+
+        # Initialize wandb for logging metrics
+        wandb.init(
+            project="DataAugmentation",
+            group = f"{args.model_str}_{args.dataset_name}_{args.aug_method}",
+            name=f"fold_{fold}",
+            config={
+                "fold": fold,
+                "max_epochs": args.max_epochs,
+                "patience": args.patience,
+                "batch_size": args.batch_size,
+                "base_lr": args.base_lr,
+                "patience_lr": args.patience_lr,
+                "min_lr": args.min_lr
+            }
+        )
+
+        # Start training
+        history, all_labels, all_preds = trainer()
+
+        # Log history and confusion matrix
+        wandb.log_history(history)
+
+        # Update classification report and confusion matrix
+        cm.update(all_labels, all_preds)
+        cr.update(all_labels, all_preds)
+
+        # Print confusion matrix for current fold 
+        logger.info("CONFUSION MATRIX: ")
+        logger.info(cm.current_cm)
+
+        # Draw heatmap plot for classification report
+        cr_fig = cr.plot_cr(mode="single")
+
+        # Log classification report and confusion matrix
+        wandb.confusion_matrix(all_labels, all_preds)
+        wandb.log_classification_report_fig(cr_fig)
+
+    # Computer mean for confusion matrix and classification report
+    cm.compute_mean_std()
+    cr.compute_mean_std()
+    
+    # Plot mean confusion matrix and classification report
+    cm_mean_fig = cm.plot_cm()
+    cr_mean_fig = cr.plot_cr(mode="mean")
+
+    # Log mean confusion matrix and classification report
+    wandb.log_confusion_matrix_fig(cr_mean_fig)
+    wandb.log_classification_report_fig(cr_mean_fig)
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+    
+
+
+
+    
+
+
+
+            
+    
+    
+    

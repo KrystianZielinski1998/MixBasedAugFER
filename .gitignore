@@ -1,0 +1,7 @@
+datasets/
+*.json
+*.csv
+preprocessing/*.csv
+preprocessing/ckextended.csv
+preprocessing/fer2013.csv
+preprocessing/fer2013new.csv
