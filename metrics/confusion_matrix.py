@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 
 
-class ConfusionMatrixTracker:
+class ConfusionMatrix:
     """
     Utility class for tracking, aggregating, and visualizing confusion matrices.
 

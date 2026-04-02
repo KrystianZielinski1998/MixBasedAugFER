@@ -2,7 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 class History:
-    def __init__(self, class_names):
+    def __init__(self):
         pass
 
     def plot_his(self, metric="loss", figsize=(10, 6)):

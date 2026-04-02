@@ -198,7 +198,7 @@ def main():
 
     # Log mean confusion matrix and classification report
     wandb_logger.log_fig(cm_mean_fig, "confusion_matrix")
-     wandb_logger.log_fig(cr_mean_fig, "classification_report")
+    wandb_logger.log_fig(cr_mean_fig, "classification_report")
 
     wandb.finish()
 
