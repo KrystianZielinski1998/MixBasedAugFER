@@ -70,7 +70,7 @@ class ConfusionMatrix:
             case "single":
             
                 sns.heatmap(
-                    self.cm,
+                    self.current_cm,
                     annot=True,
                     fmt="d",  
                     cmap=cmap,
