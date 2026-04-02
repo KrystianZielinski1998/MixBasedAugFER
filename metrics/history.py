@@ -5,22 +5,22 @@ class History:
     def __init__(self):
         pass
 
-    def plot_his(self, metric="loss", figsize=(10, 6)):
+    def plot_his(self, history, metric="loss", figsize=(10, 6)):
     
         fig, ax = plt.subplots(figsize=figsize)
 
         match metric:
             case "loss":
 
-                train = self.history["train_loss"]
-                val = self.history["val_loss"]
+                train = history["train_loss"]
+                val = history["val_loss"]
                 ylabel = "Val/Train Loss"
         
         match metric: 
             case "acc":
 
-                train = self.history["train_acc"]
-                val = self.history["val_acc"]
+                train = history["train_acc"]
+                val = history["val_acc"]
                 ylabel = "Val/Train Accuracy"
         
         epochs = range(1, len(train) + 1)
@@ -37,6 +37,7 @@ class History:
         plt.show()
 
         return fig
+
 
 
 

@@ -119,7 +119,7 @@ def main():
 
         # Get training, validation and test dataset loaders
         train_loader, val_loader, test_loader = get_loaders(
-          fold_idx=fold, weights=weights
+          fold_idx=fold
         )
 
         # Initialize trainer
