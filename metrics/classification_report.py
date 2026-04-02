@@ -89,8 +89,6 @@ class ClassificationReport:
         ax.set_xlabel("Metrics")
 
         plt.tight_layout()
-        plt.show()
-
         return fig
 
     def compute_mean_std(self):

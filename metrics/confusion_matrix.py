@@ -25,44 +25,30 @@ class ConfusionMatrix:
         self.history = []  # List of normalized confusion matrices
 
     def update(self, y_true, y_pred):
-        """
-        Compute and store a normalized confusion matrix for the current run.
+        """ Compute and store a normalized confusion matrix for the current run. """
 
-        Normalization is performed row-wise (i.e., over true labels), so each
-        row sums to 1. This ensures comparability across runs with different
-        sample sizes.
-
-        Args:
-            y_true (array-like): Ground truth labels.
-            y_pred (array-like): Predicted labels.
-        """
-        cm = confusion_matrix(y_true, y_pred, normalize="true")
+        cm = confusion_matrix(y_true, y_pred)
 
         self.current_cm = cm
         self.history.append(cm)
 
     def compute_mean_std(self):
-        """
-        Compute the mean and standard deviation of stored confusion matrices.
 
-        Returns:
-            tuple:
-                mean_cm (ndarray): Mean confusion matrix.
-                std_cm (ndarray): Standard deviation matrix.
-
-        Raises:
-            ValueError: If no matrices are stored.
-        """
-
-        stacked = np.stack(self.history, axis=0)  # Shape: (N, C, C)
-
+        normalized = []
+        for cm in self.history:
+            row_sums = cm.sum(axis=1, keepdims=True)
+            # unikamy dzielenia przez 0
+            row_sums[row_sums==0] = 1
+            norm_cm = cm / row_sums * 100.0  # % 
+            normalized.append(norm_cm)
+        
+        stacked = np.stack(normalized, axis=0)  # (num_folds, C, C)
         mean_cm = np.mean(stacked, axis=0)
         std_cm = np.std(stacked, axis=0)
-
         return mean_cm, std_cm
 
     def plot_cm(self, mode="mean", figsize=(8, 6), cmap="Blues"):
-        """Generate confusion matrix visualization."""
+        """ Generate confusion matrix visualization. """
 
         fig, ax = plt.subplots(figsize=figsize)
 
@@ -72,7 +58,7 @@ class ConfusionMatrix:
                 sns.heatmap(
                     self.current_cm,
                     annot=True,
-                    fmt="d",  
+                    fmt="",  
                     cmap=cmap,
                     xticklabels=self.class_names,
                     yticklabels=self.class_names,
@@ -88,13 +74,10 @@ class ConfusionMatrix:
 
                 mean_cm, std_cm = self.compute_mean_std()
 
-                annotations = np.empty_like(mean_cm).astype(str)
-
+                annotations = np.empty(mean_cm.shape, dtype=object)
                 for i in range(mean_cm.shape[0]):
                     for j in range(mean_cm.shape[1]):
-                        mean_val = mean_cm[i, j] * 100.0
-                        std_val = std_cm[i, j] * 100.0
-                        annotations[i, j] = f"{mean_val:.2f}%\n±{std_val:.2f}%"
+                        annotations[i,j] = f"{mean_cm[i,j]:.1f}%\n±{std_cm[i,j]:.1f}%"
 
                 sns.heatmap(
                     mean_cm,
@@ -117,7 +100,6 @@ class ConfusionMatrix:
         ax.set_ylabel("True label")
 
         plt.tight_layout()
-        plt.show()
         return fig
 
 
