@@ -5,7 +5,9 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from pathlib import Path
 from tqdm import tqdm
-
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from collections import defaultdict
+import logging
 
 class GetLoaders:
     def __init__(self, dataset_path, batch_size=64):
@@ -13,8 +15,12 @@ class GetLoaders:
         self.batch_size = batch_size
 
     def get_transforms(self, weights):
-        mean = weights.meta["mean"]
-        std = weights.meta["std"]
+        if "mean" in weights.meta:
+            mean = weights.meta["mean"]
+            std = weights.meta["std"]
+        else:
+            mean = [0.485, 0.456, 0.406]
+            std = [0.229, 0.224, 0.225]
 
         train_tf = transforms.Compose([
             transforms.Resize((224, 224)),
@@ -35,7 +41,7 @@ class GetLoaders:
         train_tf, val_tf = self.get_transforms(weights)
 
         train_path = self.dataset_path / f"fold_{fold_idx}" / "train"
-        val_path   = self.dataset_path / f"fold_{fold_idx}" / "val"
+        val_path   = self.dataset_path / f"fold_{fold_idx}" / "validation"
         test_path  = self.dataset_path / f"fold_{fold_idx}" / "test"
 
         train_ds = datasets.ImageFolder(train_path, transform=train_tf)
@@ -68,6 +74,9 @@ class EarlyStopping:
         self.counter = 0
         self.best_acc = 0
         self.early_stop = False
+
+        self.logger = logging.getLogger(__name__)
+
         
     def __call__(self, val_acc, model, fold_idx):
         if val_acc > self.best_acc + self.min_delta:
@@ -114,16 +123,18 @@ class Trainer:
         self.patience = patience
         self.base_lr = base_lr
         self.patience_lr = patience_lr
+        self.min_lr = min_lr
+
+        self.fold_idx = fold_idx
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.AdamW(model.parameters(), lr=base_lr)
         self.scheduler = ReduceLROnPlateau(
             self.optimizer,
-            mode='max',               # maximize val_acc
-            factor=0.5,               # LR will be multiplied by 0.5 when plateaued
+            mode='max',               
+            factor=0.5,               
             patience=self.patience_lr,
             min_lr=self.min_lr
-            verbose=True
         )    
 
         self.early_stopping = EarlyStopping(patience=self.patience, min_delta=0.0, verbose=True)
@@ -236,13 +247,16 @@ class Trainer:
             if self.early_stopping.early_stop:
                 break
 
+            # Scheduler
+            self.scheduler.step(val_acc)
+
         self.logger.info(f"___________________________")
-        self.logger.info(f"Evaluating on test set.")
+        self.logger.info(f"Evaluating on t est set.")
 
         # Evaluate on test set - get accuracy, confusion matrix and classification report with all the metrics
         all_labels, all_preds = self.test()
 
-        return history, all_labels, all_preds
+        return self.history, all_labels, all_preds
 
         
 

@@ -5,6 +5,10 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from pathlib import Path
 from tqdm import tqdm
+import argparse
+from pathlib import Path
+import logging
+
 from torchvision.models import (
     convnext_base,
     shufflenet_v2_x2_0,
@@ -14,12 +18,11 @@ from torchvision.models import (
     Swin_B_Weights
 )
 
-from sklearn.metrics import confusion_matrix, classification_report
-import argparse
-from pathlib import Path
-
 from train import GetLoaders, Trainer
 from utils.logging_config import setup_logging
+from metrics.confusion_matrix import ConfusionMatrix
+from metrics.classification_report import ClassificationReport
+from wandb_logger import WandbLogger
 
 def get_model(model_str: str, classes: list):
 
@@ -51,7 +54,7 @@ def parse_args():
     )
 
     # Dataset parameters
-    parser.add_argument("--dataset_path", type=str, required=True, help="Path to the root folder of the dataset")
+    parser.add_argument("-d", "--dataset_path", type=str, required=True, help="Path to the root folder of the dataset")
     
     # Model parameters
     parser.add_argument("--model_str", type=str, default="shufflenet", choices=["convnext", "shufflenet", "swin"], help="Model architecture to use")
@@ -71,6 +74,8 @@ def parse_args():
     parser.add_argument("--aug_method", type=str, default="none", help="Data augmentation method applied")
   
     args = parser.parse_args()
+
+    args.dataset_path = args.dataset_path + " 5-fold CV"
 
     # Convert dataset path to Path object
     args.dataset_path = Path(args.dataset_path)
@@ -99,7 +104,7 @@ def main():
     cm = ConfusionMatrix(classes)
 
     # Initialize wandblogger
-    wandb = WandbLogger()
+    wandb_logger = WandbLogger()
 
     # Logger
     logger = logging.getLogger(__name__) 
@@ -111,7 +116,9 @@ def main():
         model, weights = get_model(args.model_str, classes)
 
         # Get training, validation and test dataset loaders
-        train_loader, val_loader, test_loader = get_loaders(fold_idx=fold, weights)
+        train_loader, val_loader, test_loader = get_loaders(
+          fold_idx=fold, weights=weights
+        )
 
         # Initialize trainer
         trainer = Trainer(
@@ -128,6 +135,7 @@ def main():
             fold_idx=fold
         )
 
+        import wandb
         # Initialize wandb for logging metrics
         wandb.init(
             project="DataAugmentation",
@@ -148,22 +156,18 @@ def main():
         history, all_labels, all_preds = trainer()
 
         # Log history and confusion matrix
-        wandb.log_history(history)
+        wandb_logger.log_history(history)
 
         # Update classification report and confusion matrix
         cm.update(all_labels, all_preds)
         cr.update(all_labels, all_preds)
 
-        # Print confusion matrix for current fold 
-        logger.info("CONFUSION MATRIX: ")
-        logger.info(cm.current_cm)
-
         # Draw heatmap plot for classification report
         cr_fig = cr.plot_cr(mode="single")
 
         # Log classification report and confusion matrix
-        wandb.confusion_matrix(all_labels, all_preds)
-        wandb.log_classification_report_fig(cr_fig)
+        wandb_logger.log_confusion_matrix(all_labels, all_preds)
+        wandb_logger.log_classification_report_fig(cr_fig)
 
     # Computer mean for confusion matrix and classification report
     cm.compute_mean_std()
@@ -174,9 +178,12 @@ def main():
     cr_mean_fig = cr.plot_cr(mode="mean")
 
     # Log mean confusion matrix and classification report
-    wandb.log_confusion_matrix_fig(cr_mean_fig)
-    wandb.log_classification_report_fig(cr_mean_fig)
+    wandb_logger.log_confusion_matrix_fig(cr_mean_fig)
+    wandb_logger.log_classification_report_fig(cr_mean_fig)
 
+if __name__ == "__main__":
+  setup_logging()
+  main()
 
 
 

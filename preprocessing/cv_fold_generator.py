@@ -5,6 +5,7 @@ import logging
 import argparse
 from tqdm import tqdm
 from pathlib import Path
+from glob import glob
 from utils.logging_config import setup_logging
 
 class CVFoldGenerator:
@@ -18,7 +19,7 @@ class CVFoldGenerator:
                 num_folds: int,
                 random_state: int,
                 ):
-         """
+        """
         Args:
             dataset_name: Name of the dataset folder
             num_folds: Number of folds for k-fold CV
@@ -86,10 +87,7 @@ class CVFoldGenerator:
 
         pbar = tqdm(self.folds)
 
-        self.logger.info("Copying images...")
-
         for fold_idx, fold in enumerate(pbar, start=1):
-            pbar.set_description(f"Fold {fold_idx}/{self.num_folds}")
 
             # Define path to current fold directory
             fold_dir = self.output_dir / f'fold_{fold_idx}'

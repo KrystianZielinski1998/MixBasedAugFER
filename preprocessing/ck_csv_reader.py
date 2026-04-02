@@ -18,7 +18,7 @@ class CKcsvReader:
             ck_csv_name: Name of the .csv file with CK+ dataset  
         """
 
-        self.ck_csv_path = Path(__file__).resolve().parent.parent / "preprocessing" / ck_csv_path
+        self.ck_csv_path = Path(__file__).resolve().parent.parent / "preprocessing" / ck_csv_name
         self.output_dir = Path(__file__).resolve().parent.parent / "datasets" / "CK+"
         self.logger = logging.getLogger(__name__)
 
