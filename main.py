@@ -8,7 +8,7 @@ from tqdm import tqdm
 import argparse
 from pathlib import Path
 import logging
-
+import wandb
 from torchvision.models import (
     convnext_base,
     shufflenet_v2_x2_0,
@@ -22,6 +22,7 @@ from train import GetLoaders, Trainer
 from utils.logging_config import setup_logging
 from metrics.confusion_matrix import ConfusionMatrix
 from metrics.classification_report import ClassificationReport
+from metrics.history import History
 from wandb_logger import WandbLogger
 
 def get_model(model_str: str, classes: list):
@@ -102,6 +103,7 @@ def main():
     # Initialize metric classes
     cr = ClassificationReport(classes)
     cm = ConfusionMatrix(classes)
+    his = History()
 
     # Initialize wandblogger
     wandb_logger = WandbLogger()
@@ -135,7 +137,6 @@ def main():
             fold_idx=fold
         )
 
-        import wandb
         # Initialize wandb for logging metrics
         wandb.init(
             project="DataAugmentation",
@@ -155,31 +156,51 @@ def main():
         # Start training
         history, all_labels, all_preds = trainer()
 
-        # Log history and confusion matrix
-        wandb_logger.log_history(history)
-
         # Update classification report and confusion matrix
         cm.update(all_labels, all_preds)
         cr.update(all_labels, all_preds)
 
+        # Draw Train/Val Accuracy and Loss line plots
+        his_fig_acc = his.plot_his(history, metric="acc")
+        his_fig_loss = his.plot_his(history, metric="loss")
+
+        # Log Train/Val Accuracy and Loss line plots
+        wandb_logger.log_fig(his_fig_acc, "train/val_acc")
+        wandb_logger.log_fig(his_fig_loss, "train/val_loss")
+
         # Draw heatmap plot for classification report
+        cm_fig = cm.plot_cm(mode="single")
         cr_fig = cr.plot_cr(mode="single")
 
         # Log classification report and confusion matrix
-        wandb_logger.log_confusion_matrix(all_labels, all_preds)
-        wandb_logger.log_classification_report_fig(cr_fig)
+        wandb_logger.log_fig(cm_fig, "confusion_matrix")
+        wandb_logger.log_fig(cr_fig, "classification_report")
 
-    # Computer mean for confusion matrix and classification report
-    cm.compute_mean_std()
-    cr.compute_mean_std()
-    
+        wandb.finish()
+
+    wandb.init(
+            project="DataAugmentation",
+            group = f"{args.model_str}_{args.dataset_name}_{args.aug_method}",
+            name=f"mean",
+            config={
+                "max_epochs": args.max_epochs,
+                "patience": args.patience,
+                "batch_size": args.batch_size,
+                "base_lr": args.base_lr,
+                "patience_lr": args.patience_lr,
+                "min_lr": args.min_lr
+            }
+        )
+
     # Plot mean confusion matrix and classification report
-    cm_mean_fig = cm.plot_cm()
+    cm_mean_fig = cm.plot_cm(mode="mean")
     cr_mean_fig = cr.plot_cr(mode="mean")
 
     # Log mean confusion matrix and classification report
-    wandb_logger.log_confusion_matrix_fig(cr_mean_fig)
-    wandb_logger.log_classification_report_fig(cr_mean_fig)
+    wandb_logger.log_fig(cm_mean_fig, "confusion_matrix")
+     wandb_logger.log_fig(cr_mean_fig, "classification_report")
+
+    wandb.finish()
 
 if __name__ == "__main__":
   setup_logging()

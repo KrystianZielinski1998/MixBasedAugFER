@@ -14,13 +14,10 @@ class GetLoaders:
         self.dataset_path = Path(dataset_path)
         self.batch_size = batch_size
 
-    def get_transforms(self, weights):
-        if "mean" in weights.meta:
-            mean = weights.meta["mean"]
-            std = weights.meta["std"]
-        else:
-            mean = [0.485, 0.456, 0.406]
-            std = [0.229, 0.224, 0.225]
+    def get_transforms(self):
+        
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
 
         train_tf = transforms.Compose([
             transforms.Resize((224, 224)),
@@ -37,8 +34,8 @@ class GetLoaders:
 
         return train_tf, val_tf
 
-    def __call__(self, fold_idx, weights):
-        train_tf, val_tf = self.get_transforms(weights)
+    def __call__(self, fold_idx):
+        train_tf, val_tf = self.get_transforms()
 
         train_path = self.dataset_path / f"fold_{fold_idx}" / "train"
         val_path   = self.dataset_path / f"fold_{fold_idx}" / "validation"

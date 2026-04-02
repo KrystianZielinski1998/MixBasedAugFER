@@ -53,8 +53,6 @@ class ConfusionMatrixTracker:
         Raises:
             ValueError: If no matrices are stored.
         """
-        if len(self.history) == 0:
-            raise ValueError("No confusion matrices in history.")
 
         stacked = np.stack(self.history, axis=0)  # Shape: (N, C, C)
 
@@ -63,55 +61,63 @@ class ConfusionMatrixTracker:
 
         return mean_cm, std_cm
 
-    def plot_cm(self, figsize=(8, 6), cmap="Blues"):
-        """
-        Generate a heatmap visualization of the mean confusion matrix with
-        standard deviation annotations.
-
-        Values are displayed as percentages (mean ± std).
-
-        Args:
-            figsize (tuple): Figure size.
-            cmap (str): Colormap for the heatmap.
-
-        Returns:
-            matplotlib.figure.Figure: Generated figure.
-        """
-        mean_cm, std_cm = self.compute_mean_std()
-
-        # Prepare annotation strings (percentage format)
-        annotations = np.empty_like(mean_cm).astype(str)
-
-        for i in range(mean_cm.shape[0]):
-            for j in range(mean_cm.shape[1]):
-                mean_val = mean_cm[i, j] * 100.0
-                std_val = std_cm[i, j] * 100.0
-
-                annotations[i, j] = f"{mean_val:.2f}%\n±{std_val:.2f}%"
+    def plot_cm(self, mode="mean", figsize=(8, 6), cmap="Blues"):
+        """Generate confusion matrix visualization."""
 
         fig, ax = plt.subplots(figsize=figsize)
 
-        sns.heatmap(
-            mean_cm,
-            annot=annotations,
-            fmt="",
-            cmap=cmap,
-            vmin=0.0,
-            vmax=1.0,
-            xticklabels=self.class_names,
-            yticklabels=self.class_names,
-            cbar=True,
-            linewidths=1,
-            linecolor="white",
-            ax=ax
-        )
+        match mode:
+            case "single":
+            
+                sns.heatmap(
+                    self.cm,
+                    annot=True,
+                    fmt="d",  
+                    cmap=cmap,
+                    xticklabels=self.class_names,
+                    yticklabels=self.class_names,
+                    cbar=True,
+                    linewidths=1,
+                    linecolor="white",
+                    ax=ax
+                )
 
+                ax.set_title("Confusion Matrix")
+        
+            case "mean":
+
+                mean_cm, std_cm = self.compute_mean_std()
+
+                annotations = np.empty_like(mean_cm).astype(str)
+
+                for i in range(mean_cm.shape[0]):
+                    for j in range(mean_cm.shape[1]):
+                        mean_val = mean_cm[i, j] * 100.0
+                        std_val = std_cm[i, j] * 100.0
+                        annotations[i, j] = f"{mean_val:.2f}%\n±{std_val:.2f}%"
+
+                sns.heatmap(
+                    mean_cm,
+                    annot=annotations,
+                    fmt="",
+                    cmap=cmap,
+                    vmin=0.0,
+                    vmax=1.0,
+                    xticklabels=self.class_names,
+                    yticklabels=self.class_names,
+                    cbar=True,
+                    linewidths=1,
+                    linecolor="white",
+                    ax=ax
+                )
+
+                ax.set_title("Confusion Matrix (Mean ± Std, %)")
+                
         ax.set_xlabel("Predicted label")
         ax.set_ylabel("True label")
-        ax.set_title("Confusion Matrix (Mean ± Std, %)")
 
         plt.tight_layout()
-
+        plt.show()
         return fig
 
 
