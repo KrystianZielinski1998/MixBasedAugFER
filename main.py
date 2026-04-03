@@ -136,7 +136,7 @@ def main():
             base_lr=args.base_lr,
             patience_lr=args.patience_lr,
             min_lr=args.min_lr,
-            factor_lr=args.factor_lr
+            factor_lr=args.factor_lr,
             fold_idx=fold
         )
 
@@ -153,6 +153,7 @@ def main():
                 "base_lr": args.base_lr,
                 "patience_lr": args.patience_lr,
                 "min_lr": args.min_lr
+                "factor_lr": args.factor_lr
             }
         )
 
@@ -195,7 +196,8 @@ def main():
                 "batch_size": args.batch_size,
                 "base_lr": args.base_lr,
                 "patience_lr": args.patience_lr,
-                "min_lr": args.min_lr
+                "min_lr": args.min_lr,
+                "factor_lr": args.factor_lr
             }
         )
 
