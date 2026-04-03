@@ -94,7 +94,7 @@ class FERcsvReader:
                 # Save the image
                 image.save(save_path, compress_level=0)
 
-        logger.info("Processing finished.")
+        self.logger.info("Processing finished.")
 
 if __name__== "__main__":
     setup_logging()
