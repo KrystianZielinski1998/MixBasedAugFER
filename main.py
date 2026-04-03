@@ -72,7 +72,7 @@ def parse_args():
     parser.add_argument("--base_lr", type=float, default=5e-4, help="Initial learning rate")
     parser.add_argument("--patience_lr", type=int, default=5, help="LR scheduler patience")
     parser.add_argument("--min_lr", type=float, default=1e-6, help="Minimum learning rate")
-    parser.add_argument("--factor_lr", type=float, default=1e-2, help="Factor for learning rate scheduler")
+    parser.add_argument("--factor_lr", type=float, default=1e-1, help="Factor for learning rate scheduler")
 
     # K-fold parameters
     parser.add_argument("--num_folds", type=int, default=5, help="Number of folds for cross-validation")
