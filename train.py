@@ -107,6 +107,7 @@ class Trainer:
         base_lr,
         patience_lr,
         min_lr,
+        factor_lr,
         fold_idx
     ):
         self.model = model.to(device)
@@ -121,6 +122,7 @@ class Trainer:
         self.base_lr = base_lr
         self.patience_lr = patience_lr
         self.min_lr = min_lr
+        self.factor_lr = factor_lr
 
         self.fold_idx = fold_idx
 
@@ -129,7 +131,7 @@ class Trainer:
         self.scheduler = ReduceLROnPlateau(
             self.optimizer,
             mode='max',               
-            factor=0.5,               
+            factor=self.factor_lr,               
             patience=self.patience_lr,
             min_lr=self.min_lr
         )    

@@ -55,7 +55,7 @@ def parse_args():
     )
 
     # Dataset parameters
-    parser.add_argument("-d", "--dataset_path", type=str, required=True, help="Path to the root folder of the dataset")
+    parser.add_argument("-d", "--dataset_name", type=str, required=True, help="Name of the dataset")
     
     # Model parameters
     parser.add_argument("--model_str", type=str, default="shufflenet", choices=["convnext", "shufflenet", "swin"], help="Model architecture to use")
@@ -67,22 +67,21 @@ def parse_args():
     parser.add_argument("--base_lr", type=float, default=5e-4, help="Initial learning rate")
     parser.add_argument("--patience_lr", type=int, default=5, help="LR scheduler patience")
     parser.add_argument("--min_lr", type=float, default=1e-6, help="Minimum learning rate")
+    parser.add_argument("--factor_lr", type=float, default=1e-2, help="Factor for learning rate scheduler")
 
     # K-fold parameters
     parser.add_argument("--num_folds", type=int, default=5, help="Number of folds for cross-validation")
 
-    # Augmentation and logging
+    # Augmentation method
     parser.add_argument("--aug_method", type=str, default="none", help="Data augmentation method applied")
   
     args = parser.parse_args()
 
-    args.dataset_path = args.dataset_path + " 5-fold CV"
+    # Get dataset path
+    args.dataset_path = args.dataset_name + " 5-fold CV"
 
     # Convert dataset path to Path object
     args.dataset_path = Path(args.dataset_path)
-
-    # Automatically extract dataset name
-    args.dataset_name = args.dataset_path.name
 
     return args
 
@@ -137,13 +136,14 @@ def main():
             base_lr=args.base_lr,
             patience_lr=args.patience_lr,
             min_lr=args.min_lr,
+            factor_lr=args.factor_lr
             fold_idx=fold
         )
 
         # Initialize wandb for logging metrics
         wandb.init(
             project="DataAugmentation",
-            group=f"{group_name}",
+            group=group_name,
             name=f"fold_{fold}",
             config={
                 "fold": fold,
@@ -187,7 +187,7 @@ def main():
 
     wandb.init(
             project="DataAugmentation",
-            group = f"{args.model_str}_{args.dataset_name}_{args.aug_method}",
+            group=group_name,
             name=f"mean",
             config={
                 "max_epochs": args.max_epochs,
