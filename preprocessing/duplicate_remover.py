@@ -128,7 +128,7 @@ if __name__ == "__main__":
    
     duplicate_remover = DuplicateRemover(
         dataset_name="FER+",
-        csv_name="fer2013new.csv"
+        csv_name="fer_2013new.csv"
     )
 
     duplicate_remover()
