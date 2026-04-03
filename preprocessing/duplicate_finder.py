@@ -11,7 +11,7 @@ import numpy as np
 from utils.logging_config import setup_logging
 
 class VectorizedDuplicateFinder:
-    """ Finds and groups duplicate images using perceptual hashing."""
+    """ Finds and groups duplicate images using hashing method. """
 
     def __init__(self,
                  dataset_name: str,
@@ -40,7 +40,7 @@ class VectorizedDuplicateFinder:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def gather_images(self):
-        """Gather all image paths, classes, and compute hashes."""
+        """ Gathers all image paths, classes, and computes hashes. """
         file_paths = []
         classes = []
         hashes = []
@@ -72,7 +72,8 @@ class VectorizedDuplicateFinder:
         return file_paths, classes, np.array(hashes)
 
     def find_duplicates(self):
-        """Find duplicates and group them into unique sets."""
+        """ Finds duplicates and group them into unique sets. """
+
         self.logger.info("Starting duplicate search...")
 
         file_paths, classes, hashes = self.gather_images()
@@ -119,7 +120,7 @@ class VectorizedDuplicateFinder:
         return duplicate_groups
 
     def copy_duplicates(self, duplicate_groups):
-        """Copy duplicates into subfolders for each original image."""
+        """ Copies duplicates into subfolders for each original image. """
 
         self.logger.info(f"Copying duplicates to output directory: {self.output_dir}")
 
