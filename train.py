@@ -152,7 +152,7 @@ class Trainer:
         correct = 0
         total = 0
 
-        for imgs, labels in self.train_loader:
+        for imgs, labels in tqdm(self.train_loader, total=len(self.train_loader), desc="Training"):
             imgs, labels = imgs.to(self.device), labels.to(self.device)
 
             self.optimizer.zero_grad()
@@ -182,7 +182,7 @@ class Trainer:
         total = 0
 
         with torch.no_grad():
-            for imgs, labels in self.val_loader:
+            for imgs, labels in tqdm(self.val_loader, total=len(self.val_loader), desc="Evaluating"):
                 imgs, labels = imgs.to(self.device), labels.to(self.device)
 
                 outputs = self.model(imgs)
@@ -206,7 +206,7 @@ class Trainer:
         all_labels = []
 
         with torch.no_grad():
-            for imgs, labels in self.test_loader:
+            for imgs, labels in tqdm(self.test_loader, total=len(self.test_loader), desc="Testing"):
                 imgs, labels = imgs.to(self.device), labels.to(self.device)
 
                 outputs = self.model(imgs)
