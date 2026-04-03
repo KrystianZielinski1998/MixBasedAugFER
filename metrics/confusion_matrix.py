@@ -77,7 +77,7 @@ class ConfusionMatrix:
                 annotations = np.empty(mean_cm.shape, dtype=object)
                 for i in range(mean_cm.shape[0]):
                     for j in range(mean_cm.shape[1]):
-                        annotations[i,j] = f"{mean_cm[i,j]:.1f}%\n±{std_cm[i,j]:.1f}%"
+                        annotations[i,j] = f"{mean_cm[i,j]:.2f}%\n±{std_cm[i,j]:.2f}%"
 
                 sns.heatmap(
                     mean_cm,
@@ -85,7 +85,7 @@ class ConfusionMatrix:
                     fmt="",
                     cmap=cmap,
                     vmin=0.0,
-                    vmax=1.0,
+                    vmax=100.0,
                     xticklabels=self.class_names,
                     yticklabels=self.class_names,
                     cbar=True,

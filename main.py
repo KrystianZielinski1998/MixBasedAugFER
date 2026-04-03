@@ -75,7 +75,7 @@ def parse_args():
     parser.add_argument("--aug_method", type=str, default="none", help="Data augmentation method applied")
   
     args = parser.parse_args()
-
+    
     args.dataset_path = args.dataset_path + " 5-fold CV"
 
     # Convert dataset path to Path object
@@ -176,6 +176,10 @@ def main():
         wandb_logger.log_fig(cm_fig, "confusion_matrix")
         wandb_logger.log_fig(cr_fig, "classification_report")
 
+        # Log model artifact 
+        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", f"best_model_fold_{fold}.pth")
+
+        # Finish logging for current fold
         wandb.finish()
 
     wandb.init(
@@ -200,6 +204,7 @@ def main():
     wandb_logger.log_fig(cm_mean_fig, "confusion_matrix")
     wandb_logger.log_fig(cr_mean_fig, "classification_report")
 
+    # Finish logging for averaging results from k-fold CV
     wandb.finish()
 
 if __name__ == "__main__":

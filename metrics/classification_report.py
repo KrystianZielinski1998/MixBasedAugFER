@@ -81,9 +81,6 @@ class ClassificationReport:
             ax=ax
         )
 
-        summary_start = len(rows) - 2
-        ax.hlines(summary_start, *ax.get_xlim(), colors='white', linewidth=2.5, zorder=3)
-
         ax.set_title(title)
         ax.set_ylabel("Classes")
         ax.set_xlabel("Metrics")
