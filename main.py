@@ -25,6 +25,11 @@ from metrics.classification_report import ClassificationReport
 from metrics.history import History
 from wandb_logger import WandbLogger
 
+import re
+
+def clean_name(name):
+    return re.sub(r"[^a-zA-Z0-9._-]", "_", name)
+
 def get_model(model_str: str, classes: list):
 
     num_classes = len(classes)
@@ -180,8 +185,9 @@ def main():
         wandb_logger.log_fig(cm_fig, "confusion_matrix")
         wandb_logger.log_fig(cr_fig, "classification_report")
 
-        # Log model artifact 
-        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", f"{group_name}_{fold}")
+        # Log model artifact
+        artifact_name = clean_name(f"{group_name}{fold}")
+        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", artifact_name)
 
         # Finish logging for current fold
         wandb.finish()
