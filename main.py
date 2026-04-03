@@ -180,7 +180,7 @@ def main():
         wandb_logger.log_fig(cr_fig, "classification_report")
 
         # Log model artifact 
-        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", f"{group_name_fold}")
+        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", f"{group_name}_{fold}")
 
         # Finish logging for current fold
         wandb.finish()
