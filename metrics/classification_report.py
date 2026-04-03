@@ -91,7 +91,13 @@ class ClassificationReport:
                 yticklabels[i].set_fontweight("bold")
         ax.set_yticklabels(yticklabels)
 
+        n_rows = data.shape[0]
+        for text in ax.texts:
+            row = int(text.get_position()[1])  
+            if row < 2:  
+                text.set_fontweight("bold")
         plt.tight_layout()
+
         return fig
 
     def compute_mean_std(self):

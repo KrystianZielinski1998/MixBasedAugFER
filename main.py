@@ -69,7 +69,7 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size for training and validation")
     parser.add_argument("--max_epochs", type=int, default=100, help="Maximum number of epochs")
     parser.add_argument("--patience", type=int, default=20, help="Early stopping patience")
-    parser.add_argument("--base_lr", type=float, default=1e-4, help="Initial learning rate")
+    parser.add_argument("--base_lr", type=float, default=5e-4, help="Initial learning rate")
     parser.add_argument("--patience_lr", type=int, default=5, help="LR scheduler patience")
     parser.add_argument("--min_lr", type=float, default=1e-6, help="Minimum learning rate")
     parser.add_argument("--factor_lr", type=float, default=1e-2, help="Factor for learning rate scheduler")
