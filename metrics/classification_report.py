@@ -85,6 +85,12 @@ class ClassificationReport:
         ax.set_ylabel("Classes")
         ax.set_xlabel("Metrics")
 
+        yticklabels = ax.get_yticklabels()
+        for i in range(len(yticklabels)):
+            if i >= len(yticklabels) - 2:
+                yticklabels[i].set_fontweight("bold")
+        ax.set_yticklabels(yticklabels)
+
         plt.tight_layout()
         return fig
 

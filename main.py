@@ -75,7 +75,7 @@ def parse_args():
     parser.add_argument("--aug_method", type=str, default="none", help="Data augmentation method applied")
   
     args = parser.parse_args()
-    
+
     args.dataset_path = args.dataset_path + " 5-fold CV"
 
     # Convert dataset path to Path object
@@ -111,6 +111,9 @@ def main():
     # Logger
     logger = logging.getLogger(__name__) 
 
+    # Group name
+    group_name = f"{args.model_str}_{args.dataset_name}_{args.aug_method}"
+
     # Start k-fold cross validation
     for fold in range(1, args.num_folds + 1):
         
@@ -140,7 +143,7 @@ def main():
         # Initialize wandb for logging metrics
         wandb.init(
             project="DataAugmentation",
-            group = f"{args.model_str}_{args.dataset_name}_{args.aug_method}",
+            group=f"{group_name}",
             name=f"fold_{fold}",
             config={
                 "fold": fold,
@@ -177,7 +180,7 @@ def main():
         wandb_logger.log_fig(cr_fig, "classification_report")
 
         # Log model artifact 
-        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", f"best_model_fold_{fold}.pth")
+        wandb_logger.log_artifact(f"best_model_fold_{fold}.pth", f"{group_name_fold}")
 
         # Finish logging for current fold
         wandb.finish()
