@@ -94,7 +94,7 @@ class ClassificationReport:
         n_rows = data.shape[0]
         for text in ax.texts:
             row = int(text.get_position()[1])  
-            if row < 2:  
+            if row >= n_rows - 2:  
                 text.set_fontweight("bold")
         plt.tight_layout()
 
