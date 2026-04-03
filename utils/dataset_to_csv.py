@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 
 
-class ImagesToCSV:
+class DatasetToCSV:
     def __init__(self, dataset_name):
         self.input_dir = Path(__file__).resolve().parent.parent / "datasets" / f"{dataset_name}"
         self.output_csv = f"{dataset_name}.csv"
@@ -62,7 +62,7 @@ class ImagesToCSV:
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate csv file with images and splits.")
 
-    parser.add_argument("-d", "--dataset_dir", type=str, required=True, help="Directory name of dataset")
+    parser.add_argument("-d", "--dataset_name", type=str, required=True, help="Directory name of dataset")
 
     args = parser.parse_args()
     return args
@@ -70,5 +70,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    images_to_csv = ImagesToCSV()
+    dataset_to_csv = DatasetToCSV(args.dataset_name)
+
+    dataset_to_csv()
 
