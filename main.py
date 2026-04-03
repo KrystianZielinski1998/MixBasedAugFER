@@ -78,7 +78,7 @@ def parse_args():
     args = parser.parse_args()
 
     # Get dataset path
-    args.dataset_path = args.dataset_name + " 5-fold CV"
+    args.dataset_path = "datasets/" + args.dataset_name + " 5-fold CV"
 
     # Convert dataset path to Path object
     args.dataset_path = Path(args.dataset_path)
