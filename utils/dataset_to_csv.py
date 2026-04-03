@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 import numpy as np
 from PIL import Image
-
+import argparse
 
 class DatasetToCSV:
     def __init__(self, dataset_name):
@@ -13,7 +13,7 @@ class DatasetToCSV:
         img = Image.open(path).convert("L")
         return " ".join(map(str, np.array(img).flatten()))
 
-    def generate_csv(self):
+    def __call__(self):
         data = {}
 
         fold_dirs = sorted(self.input_dir.glob("fold_*"))
