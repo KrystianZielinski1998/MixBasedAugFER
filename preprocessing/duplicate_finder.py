@@ -9,6 +9,7 @@ import logging
 import networkx as nx
 import numpy as np
 from utils.logging_config import setup_logging
+from pathlib import Path
 
 class VectorizedDuplicateFinder:
     """ Finds and groups duplicate images using hashing method. """

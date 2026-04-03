@@ -100,8 +100,8 @@ if __name__== "__main__":
     setup_logging()
 
     ferplus_csv_reader = FERcsvReader(
-        fer2013_csv_path="fer2013.csv",
-        ferplus_csv_path="fer2013new.csv",
+        fer2013_csv_name="fer2013.csv",
+        ferplus_csv_name="fer2013new.csv",
     )
 
     ferplus_csv_reader()

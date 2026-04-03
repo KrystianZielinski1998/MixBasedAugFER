@@ -5,6 +5,7 @@ import pandas as pd
 from collections import defaultdict
 from tqdm import tqdm
 from utils.logging_config import setup_logging
+from pathlib import Path
 
 class DuplicateRemover:
     """ Removes duplicates from original dataset (FER+) and resolves class conflicts using voting for duplicate images. """
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     setup_logging()
    
     duplicate_remover = DuplicateRemover(
-        dataset_path="FER+",
+        dataset_name="FER+",
         csv_name="fer2013new.csv"
     )
 
