@@ -31,7 +31,7 @@ class DuplicateRemover:
             "anger", "disgust", "fear", "contempt"
         ]
 
-        self.df = pd.read_csv(csv_path, usecols=self.EMOTIONS)
+        self.df = pd.read_csv(self.csv_path, usecols=self.EMOTIONS)
         self.votes_array = self.df.values
 
         self.logger = logging.getLogger(__name__)

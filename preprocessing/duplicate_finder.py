@@ -40,6 +40,30 @@ class VectorizedDuplicateFinder:
         
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
+    def compute_hash(self, img_path):
+    """
+    Compute a hash vector for an image using the selected hash method.
+
+    Returns:
+        hash_vector (np.ndarray of bool): flattened hash, shape (hash_size**2,)
+    """
+
+    img = Image.open(img_path).convert("L")
+
+    match self.hash_method:
+        case "phash":
+            h = imagehash.phash(img, hash_size=self.hash_size)
+        case "whash":
+            h = imagehash.whash(img, hash_size=self.hash_size)
+        case "dhash":
+            h = imagehash.dhash(img, hash_size=self.hash_size)
+        case _:
+            raise ValueError(f"Unknown hash method: {self.hash_method}")
+
+    hash_vector = h.hash.flatten() 
+
+    return hash_vector
+
     def gather_images(self):
         """ Gathers all image paths, classes, and computes hashes. """
         file_paths = []

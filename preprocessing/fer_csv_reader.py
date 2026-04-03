@@ -89,7 +89,7 @@ class FERcsvReader:
                 emotion = self.EMOTIONS[label_idx]
 
                 # Create path to save the image in proper class dir
-                save_path = os.path.join(self.output_dir_path, emotion, f"{idx}.png")
+                save_path = self.output_dir / emotion / f"{idx}.png"
                 
                 # Save the image
                 image.save(save_path, compress_level=0)
@@ -100,8 +100,8 @@ if __name__== "__main__":
     setup_logging()
 
     ferplus_csv_reader = FERcsvReader(
-        fer2013_csv_name="fer2013.csv",
-        ferplus_csv_name="fer2013new.csv",
+        fer2013_csv_name="fer_2013.csv",
+        ferplus_csv_name="fer_2013new.csv",
     )
 
     ferplus_csv_reader()
