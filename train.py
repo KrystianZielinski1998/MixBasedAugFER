@@ -180,7 +180,7 @@ class Trainer:
             self.optimizer.zero_grad()
 
             with torch.cuda.amp.autocast():
-                outputs = model(input)
+                outputs = model(imgs)
                 loss = criterion(output, target)
 
             scales.scale(loss).backward()
