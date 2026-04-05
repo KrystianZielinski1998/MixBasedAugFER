@@ -22,7 +22,7 @@ class GetLoaders:
         train_tf = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.RandomHorizontalFlip(),
-            transforms.ColorJitter(brightness=0.1, contrast=0.1),
+            transforms.ColorJitter(brightness=0.05, contrast=0.05),
             transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std)
         ])
@@ -47,9 +47,28 @@ class GetLoaders:
         test_ds = datasets.ImageFolder(test_path, transform=val_tf)
 
         return (
-            DataLoader(train_ds, batch_size=self.batch_size, shuffle=True),
-            DataLoader(val_ds, batch_size=self.batch_size),
-            DataLoader(test_ds, batch_size=self.batch_size),
+            DataLoader(
+                train_ds,
+                batch_size=self.batch_size,
+                shuffle=True,
+                num_workers=4,
+                pin_memory=True,
+                persistent_workers=True
+            ),
+            DataLoader(
+                val_ds,
+                batch_size=self.batch_size,
+                num_workers=4,
+                pin_memory=True,
+                persistent_workers=True
+            ),
+            DataLoader(
+                test_ds,
+                batch_size=self.batch_size,
+                num_workers=4,
+                pin_memory=True,
+                persistent_workers=True
+            ),
         )
 
 class EarlyStopping:
@@ -153,16 +172,20 @@ class Trainer:
         correct = 0
         total = 0
 
+        scaler = torch.cuda.amp.GradScaler()
+
         for imgs, labels in tqdm(self.train_loader, total=len(self.train_loader), desc="Training"):
             imgs, labels = imgs.to(self.device), labels.to(self.device)
 
             self.optimizer.zero_grad()
 
-            outputs = self.model(imgs)
-            loss = self.criterion(outputs, labels)
+            with torch.cuda.amp.autocast():
+                outputs = model(input)
+                loss = criterion(output, target)
 
-            loss.backward()
-            self.optimizer.step()
+            scales.scale(loss).backward()
+            scaler.step(self.optimizer)
+            scaler.update()
 
             total_loss += loss.item() * imgs.size(0)
             preds = outputs.argmax(dim=1)
@@ -251,7 +274,7 @@ class Trainer:
             self.scheduler.step(val_acc)
 
         self.logger.info(f"___________________________")
-        self.logger.info(f"Evaluating on t est set.")
+        self.logger.info(f"Evaluating on test set.")
 
         # Evaluate on test set - get accuracy, confusion matrix and classification report with all the metrics
         all_labels, all_preds = self.test()
