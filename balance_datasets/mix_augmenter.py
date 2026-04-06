@@ -10,6 +10,7 @@ import os
 import logging
 
 from augmentations.rowmix import RowMix
+#from augmentations.columnmix import ColumnMix
 #from augmentations.puzzlemix import PuzzleMix
 from utils.logging_config import setup_logging
 
@@ -51,6 +52,8 @@ class MixAugmenter:
         match self.augment_method:
             case "rowmix":
                 self.augment_method_cls = RowMix()
+            case "columnmix":
+                self.augment_method_cls = ColumnMix()
             case "puzzlemix":
                 self.augment_method_cls = PuzzleMix()
             case _:
@@ -75,8 +78,6 @@ class MixAugmenter:
             pbar.set_description(f"Fold {fold_idx}/{len(folds)}")
 
             for class_name, pairs in fold_data.items():
-                self.logger.debug(f"Class: {class_name} | Pairs: {len(pairs)}")
-
                 tasks = self.create_tasks(pairs)
                 self.process_parallel(tasks)
 
@@ -112,7 +113,12 @@ class MixAugmenter:
         """Process tasks in parallel using multiprocessing."""
 
         with mp.Pool(self.num_workers) as pool:
-            for _ in pool.imap_unordered(worker, tasks):
+            for _ in tqdm(
+                pool.imap_unordered(worker, tasks),
+                total=len(tasks),
+                desc="Augmenting",
+                leave=False,
+            ):
                 pass
 
 
@@ -144,6 +150,7 @@ if __name__ == "__main__":
     )
 
     augmenter()
+
 
 
 
