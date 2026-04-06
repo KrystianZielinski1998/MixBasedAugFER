@@ -1,15 +1,16 @@
 import random
 import cv2
 import numpy as np
+import logging
 
 class RowMix:
     def __init__(self,
-                row_height_min: int=4,
-                row_height_max: int=8,
-                gap_min: int=4,
-                gap_max: int=8,
+                row_height_min: int=6,
+                row_height_max: int=10,
+                gap_min: int=6,
+                gap_max: int=10,
                 start_offset_min: int=0,
-                start_offset_max: int=8,
+                start_offset_max: int=10,
                 seed: int=42
                ):
 
@@ -30,7 +31,7 @@ class RowMix:
 
     def __call__(self, img1, img2):
         """
-        Mix two images row-wise, alternating strips of img2 onto img1.
+        Mix two images row-wise.
 
         Args:
             img1: First input image (base image).
@@ -72,8 +73,6 @@ class RowMix:
 
         # Return the final mixed image
         return result
-
-
     
 
 

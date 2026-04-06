@@ -41,15 +41,13 @@ class BalanceDataGenerator:
         - `to_remove_*.json` for majority classes to remove extra images
         - `to_augment_*.json` for minority classes to augment images
         """
-        to_remove = {}  # dictionary to store images to remove
-        to_augment = {}  # dictionary to store image pairs for augmentation
-        rng = random.Random(self.seed)  # random generator
+        to_remove = {} 
+        to_augment = {}  
+        rng = random.Random(self.seed)  
 
         # Get all fold directories sorted
         folds = sorted([p for p in self.input_dir.iterdir() if p.is_dir()])  # list of fold directories
-        num_folds = len(folds)  # total number of folds
-
-        self.logger.info("Processing dataset...")
+        num_folds = len(folds)  
 
         # Outer progress bar for folds
         pbar = tqdm(folds, total=num_folds)
@@ -139,7 +137,6 @@ if __name__ == "__main__":
     )
     
     balance_data_generator()
-
 
 
 

@@ -10,7 +10,6 @@ import os
 import logging
 
 from augmentations.rowmix import RowMix
-#from augmentations.columnmix import ColumnMix
 #from augmentations.puzzlemix import PuzzleMix
 from utils.logging_config import setup_logging
 
@@ -51,11 +50,9 @@ class MixAugmenter:
         # Select augmentation method
         match self.augment_method:
             case "rowmix":
-                self.augmentor = RowMix()
-            case "columnmix":
-                self.augmentor = ColumnMix()
+                self.augment_method_cls = RowMix()
             case "puzzlemix":
-                self.augmentor = PuzzleMix()
+                self.augment_method_cls = PuzzleMix()
             case _:
                 raise ValueError(f"Unknown augment method: {self.augment_method}")
 
@@ -75,8 +72,7 @@ class MixAugmenter:
         pbar = tqdm(folds, desc="Folds", unit="fold")
 
         for fold_idx, (fold_name, fold_data) in enumerate(pbar, start=1):
-            pbar.set_description(f"Fold {fold_idx}/{len(folds)}: {fold_name}")
-            self.logger.info(f"Processing fold: {fold_name}")
+            pbar.set_description(f"Fold {fold_idx}/{len(folds)}")
 
             for class_name, pairs in fold_data.items():
                 self.logger.debug(f"Class: {class_name} | Pairs: {len(pairs)}")
@@ -106,7 +102,7 @@ class MixAugmenter:
                     img1_path=str(img1_path),
                     img2_path=str(img2_path),
                     output_path=str(output_path),
-                    augmentor=self.augmentor,
+                    augment_method_cls=self.augment_method_cls,
                 )
             )
 
@@ -116,12 +112,7 @@ class MixAugmenter:
         """Process tasks in parallel using multiprocessing."""
 
         with mp.Pool(self.num_workers) as pool:
-            for _ in tqdm(
-                pool.imap_unordered(worker, tasks),
-                total=len(tasks),
-                desc="Augmenting",
-                leave=False,
-            ):
+            for _ in pool.imap_unordered(worker, tasks):
                 pass
 
 
