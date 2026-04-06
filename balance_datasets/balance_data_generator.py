@@ -46,38 +46,38 @@ class BalanceDataGenerator:
         rng = random.Random(self.seed)  
 
         # Get all fold directories sorted
-        folds = sorted([p for p in self.input_dir.iterdir() if p.is_dir()])  # list of fold directories
+        folds = sorted([p for p in self.input_dir.iterdir() if p.is_dir()])  
         num_folds = len(folds)  
 
         # Outer progress bar for folds
         pbar = tqdm(folds, total=num_folds)
         for fold_idx, fold in enumerate(pbar, start=1):
-            pbar.set_description(f"Fold {fold_idx}/{num_folds}")  # dynamic fold description
+            pbar.set_description(f"Fold {fold_idx}/{num_folds}")  
 
-            fold_name = fold.name  # e.g., 'fold_1'
-            train_path = fold / "train"  # path to train subfolder
-            class_dirs = [p for p in train_path.iterdir() if p.is_dir()]  # list of class directories in train
+            fold_name = fold.name  
+            train_path = fold / "train"  
+            class_dirs = [p for p in train_path.iterdir() if p.is_dir()] 
 
-            to_remove[fold_name] = {}  # initialize dictionary for this fold
-            to_augment[fold_name] = {}  # initialize dictionary for this fold
+            to_remove[fold_name] = {}  ld
+            to_augment[fold_name] = {} 
 
             # Inner progress bar for classes in the fold
             for class_dir in class_dirs:
-                class_name = class_dir.name  # class label
-                images = sorted([p for p in class_dir.iterdir() if p.is_file()])  # list of image paths
-                num_images = len(images)  # number of images in class
+                class_name = class_dir.name  
+                images = sorted([p for p in class_dir.iterdir() if p.is_file()])  
+                num_images = len(images)  
 
                 # Majority classes: remove extra images
                 if num_images > self.count_target:
-                    n_remove = num_images - self.count_target  # number of images to remove
-                    img_to_remove = rng.sample(images, n_remove)  # randomly select images to remove
+                    n_remove = num_images - self.count_target  
+                    img_to_remove = rng.sample(images, n_remove) 
                     to_remove[fold_name][class_name] = [
-                        str(img.relative_to(self.input_dir)) for img in img_to_remove  # relative paths for JSON
+                        str(img.relative_to(self.input_dir)) for img in img_to_remove  
                     ]
 
                 # Minority classes: create balanced pairs for augmentation
                 elif num_images < self.count_target:
-                    n_needed = self.count_target - num_images  # how many extra images needed
+                    n_needed = self.count_target - num_images  
                     pairs = []
 
                     if n_needed >= num_images:
@@ -102,8 +102,8 @@ class BalanceDataGenerator:
                     ]
 
         # Save JSON files
-        augment_json_path = Path(f"to_augment_{self.input_dir.name}.json")  # JSON for augmentation
-        remove_json_path = Path(f"to_remove_{self.input_dir.name}.json")  # JSON for removal
+        augment_json_path = Path("balance_datasets") / f"to_augment_{self.input_dir.name}.json"
+        remove_json_path = Path("balance_datasets") / f"to_remove_{self.input_dir.name}.json"
 
         with augment_json_path.open("w") as f:
             json.dump(to_augment, f, indent=2)
