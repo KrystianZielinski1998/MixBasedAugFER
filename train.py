@@ -51,21 +51,21 @@ class GetLoaders:
                 train_ds,
                 batch_size=self.batch_size,
                 shuffle=True,
-                num_workers=4,
+                num_workers=2,
                 pin_memory=True,
                 persistent_workers=True
             ),
             DataLoader(
                 val_ds,
                 batch_size=self.batch_size,
-                num_workers=4,
+                num_workers=2,
                 pin_memory=True,
                 persistent_workers=True
             ),
             DataLoader(
                 test_ds,
                 batch_size=self.batch_size,
-                num_workers=4,
+                num_workers=2,
                 pin_memory=True,
                 persistent_workers=True
             ),
@@ -180,11 +180,11 @@ class Trainer:
             self.optimizer.zero_grad()
 
             with torch.cuda.amp.autocast():
-                outputs = model(imgs)
-                loss = criterion(output, target)
+                outputs = self.model(imgs)
+                loss = self.criterion(outputs, labels)
 
-            scales.scale(loss).backward()
-            scaler.step(self.optimizer)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
             scaler.update()
 
             total_loss += loss.item() * imgs.size(0)
@@ -247,7 +247,7 @@ class Trainer:
     def __call__(self):
 
         for epoch in range(self.max_epochs):
-            self.logger.info(f"___________________________")
+            self.logger.info(f"________________________________________________")
             self.logger.info(f"Epoch: {epoch+1} / {self.max_epochs}")
             
             current_lr = self.optimizer.param_groups[0]['lr']
@@ -280,6 +280,8 @@ class Trainer:
         all_labels, all_preds = self.test()
 
         return self.history, all_labels, all_preds
+
+        
 
         
 

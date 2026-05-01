@@ -8,7 +8,6 @@ from pathlib import Path
 from glob import glob
 from utils.logging_config import setup_logging
 
-import pandas as pd
 from PIL import Image
 import numpy as np
 
@@ -25,9 +24,9 @@ class CVFoldGenerator:
                 ):
         """
         Args:
-            dataset_name: Name of the dataset folder
-            num_folds: Number of folds for k-fold CV
-            random_state: Random seed for reproducibility
+            dataset_name (str): Name of the dataset folder
+            num_folds (int): Number of folds for k-fold CV
+            random_state (int): Random seed for reproducibility
         """
 
         self.input_dir = Path(__file__).resolve().parent.parent / "datasets" / f"{dataset_name}"

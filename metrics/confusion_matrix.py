@@ -8,9 +8,10 @@ class ConfusionMatrix:
     """
     Utility class for tracking, aggregating, and visualizing confusion matrices.
 
-    The class stores normalized confusion matrices (row-wise) and provides
-    functionality to compute mean and standard deviation, as well as to
-    visualize the aggregated result.
+    This class: 
+    - Calculates confusion matrix for each iteration of Cross Validation and stores it
+    - Computes mean confusion matrix with standard deviations based on aggregated confusion matrixes from each iteration of Cross Validation
+    - Visualizes the confusion matrixes on a plot
     """
 
     def __init__(self, class_names):
@@ -22,7 +23,7 @@ class ConfusionMatrix:
         """
         self.class_names = class_names
         self.current_cm = None
-        self.history = []  # List of normalized confusion matrices
+        self.history = []  
 
     def update(self, y_true, y_pred):
         """ Compute and store a normalized confusion matrix for the current run. """
@@ -39,10 +40,10 @@ class ConfusionMatrix:
             row_sums = cm.sum(axis=1, keepdims=True)
             # unikamy dzielenia przez 0
             row_sums[row_sums==0] = 1
-            norm_cm = cm / row_sums * 100.0  # % 
+            norm_cm = cm / row_sums * 100.0  
             normalized.append(norm_cm)
         
-        stacked = np.stack(normalized, axis=0)  # (num_folds, C, C)
+        stacked = np.stack(normalized, axis=0)  
         mean_cm = np.mean(stacked, axis=0)
         std_cm = np.std(stacked, axis=0)
         return mean_cm, std_cm

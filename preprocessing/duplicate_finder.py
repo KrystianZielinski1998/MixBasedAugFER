@@ -7,7 +7,6 @@ from tqdm import tqdm
 import shutil
 import logging
 import networkx as nx
-import numpy as np
 from utils.logging_config import setup_logging
 from pathlib import Path
 
@@ -125,7 +124,7 @@ class VectorizedDuplicateFinder:
         G.add_nodes_from(file_paths)
 
         for i in range(n_images):
-            for j in range(1, self.nearest_neighbors + 1):  # skip self
+            for j in range(1, self.nearest_neighbors + 1): 
                 if distances_bits[i, j] <= self.hamming_threshold:
                     idx = indices[i, j]
                     G.add_edge(file_paths[i], file_paths[idx])
