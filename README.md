@@ -4,7 +4,7 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c?logo=pytorch)
 ![Weights & Biases](https://img.shields.io/badge/Weights%20%26%20Biases-1.0-FFBE00?logo=weightsandbiases)
 
-This project implements a dataset preprocessing, CNN model training for Facial Emotion Recognition task, evaluation in a stratified Cross-Validation setup with experiment tracking pipeline. The project was built with Pytorch. 
+This project implements a full pipeline for facial emotion recognition, including data preprocessing, CNN model training, and evaluation using stratified cross-validation with experiment tracking. The project is built with PyTorch.
 
 ## Project description
 
