@@ -13,14 +13,13 @@ The preprocessing steps include:
 * Detecting duplicate images within the dataset and removing them.
 * Setting up directories with train/validation/test splits for a stratified 5-fold Cross-Validation.
 
-Detecting duplicate images is done using computing phash and applying nearest-neighbor search which uses hamming distance as similarity metric. The duplicates are saved in seperate directories for visual verification. During the verification it was found that some of the same duplicate images were assigned to different classes, despite being corrected from FER+ 10-man voting. The total sum of votes for the duplicates were used to classify them to one class. The duplicates are removed keeping only one image sample.  
+Duplicate images are detected by computing perceptual hashes (pHash) and performing nearest-neighbor search using Hamming distance as a similarity metric. Identified duplicates are saved in separate directories for visual inspection. It was observed that some identical images were assigned to different classes, despite prior correction using the FER+ 10-man voting scheme. To resolve these inconsistencies, the votes from duplicate instances were aggregated and used to assign a single class label. Finally, duplicates were removed, retaining only one representative sample from each group of duplicates.
 
-The training process includes: 
-* Fine-tuning 3 choosen neural nets - ShuffleNetV2, ConveNext-Base and Swin-Base Transformer - for each iteration of stratified 5-fold Cross-Validation. 
+The training process includes fine-tuning 3 choosen deep neural networks - ShuffleNetV2, ConveNext-Base and Swin-Base Transformer - for each iteration of stratified 5-fold Cross-Validation. 
 
 Metrics used for model evaluations: 
 * Recall, Precision and F1 score for each emotion class with averaged values 
-* Confusion matrixes
+* Confusion matrices
 * Accuracy 
 
 All the metrics are gathered from each iteration of Cross-Validation and then used to calculate mean values with standard deviations for the entire process. 
